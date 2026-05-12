@@ -184,7 +184,7 @@ class ViT4TS:
 
             plot_params = ("-", 1, "*", 0.1, "black", (0, 1) if self.standardize else None) 
             # line style, line width, marker, marker size, color, y-axis limits (if standardized)
-#slm
+
             if self.verbose:
                 print(
                     f"Generating windowed visualizations (window_size={self.window_size}, step_size={step_size})..."
