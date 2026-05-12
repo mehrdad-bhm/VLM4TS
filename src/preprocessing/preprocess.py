@@ -45,8 +45,8 @@ def preprocess_time_series(time_series):
 def draw_image(
     series_id,
     save_path,
-    time_series,
-    time_points,
+    time_series, # a window of values:   values between index 0:224
+    time_points, # a window of timestamps: timestamps between index 0:224
     override=True,
     save_image=False,
     image_size=(240, 240),
@@ -84,13 +84,13 @@ def draw_image(
     """
 
     # Ensure the output directory exists
-    if not os.path.exists(save_path):
+    if not os.path.exists(save_path): # temp_dir
         os.makedirs(save_path)
 
     # Create filenames (always use "_line" suffix)
-    base_name = f"{series_id}_line"
-    tensor_filename = os.path.join(save_path, base_name + "_img.npy")
-    png_filename = os.path.join(save_path, base_name + ".png")
+    base_name = f"{series_id}_line" # e.g. series_1_line
+    tensor_filename = os.path.join(save_path, base_name + "_img.npy") # e.g. series_1_line_img.npy
+    png_filename = os.path.join(save_path, base_name + ".png") # e.g. series_1_line.png
 
     # If files already exist and override is False, skip
     if os.path.exists(tensor_filename) and (not save_image or os.path.exists(png_filename)) and not override:
@@ -98,14 +98,18 @@ def draw_image(
         return None
 
     # Convert time_series and time_points to numpy arrays
-    time_series = np.array(time_series, dtype=float)
-    time_points = np.array(time_points, dtype=float)
+    time_series = np.array(time_series, dtype=float) # e.g. values between index 0:224
+    time_points = np.array(time_points, dtype=float) # e.g. timestamps between index 0:224  
 
     # Generate line plot
     fig_width = image_size[1] / dpi
     fig_height = image_size[0] / dpi
+    # convert pixel dimensions to figure size in inches for Matplotlib.
+    # because Matplotlib figsize expects size in inches (width_in_inches, height_in_inches).
+    # Example: image_size=(240, 240), dpi=100 → figsize=(2.4, 2.4) → saved PNG will be 240×240 pixels.
 
-    plt.figure(figsize=(fig_width, fig_height), dpi=dpi)
+    plt.figure(figsize=(fig_width, fig_height), dpi=dpi) 
+    # dpi: The resolution of the figure in dots-per-inch.
     linestyle, linewidth, marker, markersize, color, y_scale = plot_params
     plt.plot(time_points, time_series, linestyle=linestyle, linewidth=linewidth,
                 marker=marker, markersize=markersize, color=color)
@@ -192,22 +196,33 @@ def draw_windowed_images(
     window_id = 0
 
     # Iterate over windows
-    for start in range(0, num_points - window_size + 1, step_size):
-        end = start + window_size
+    for start in range(0, num_points - window_size + 1, step_size): 
+        # (0, 1000 - 224 + 1 , 56) = (0, 777, 56) : start=0, 56, 112, ..., 776
+        end = start + window_size 
+        # 0 + 224 = 224, 56 + 224 = 280, ..., 776 + 224 = 1000 : end=224, 280, 168, ..., 1000
+        
         # Extract the windowed sub-sequence and corresponding time points
-        window_series = time_series[start:end]
-        window_time = time_points[start:end]
+        window_series = time_series[start:end] # a window of values:     
+        # first iterate -> values between index 0:224
+        # second iterate -> values between index 56:280
+        # ...
+        # last iterate -> values between index 776:1000
+        window_time = time_points[start:end]   # a window of timestamps: 
+        # first iterate -> timestamps between index 0:224,
+        # second iterate -> timestamps between index 56:280,
+        # ...,
+        # last iterate -> timestamps between index 776:1000
 
         # Create a unique series ID for this window
         window_id += 1
-        window_series_id = f"{base_series_id}_{window_id}"
+        window_series_id = f"{base_series_id}_{window_id}" # series_1, series_2, ...
 
         # Call draw_image() for this window
         img_tensor = draw_image(
-            series_id=window_series_id,
+            series_id=window_series_id, # series_1
             save_path=save_path,
-            time_series=window_series,
-            time_points=window_time,
+            time_series=window_series, # e.g. values between index 0:224
+            time_points=window_time, # e.g. timestamps between index 0:224
             override=override,
             save_image=save_image,
             image_size=image_size,
