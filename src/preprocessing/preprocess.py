@@ -219,7 +219,7 @@ def draw_windowed_images(
         window_id += 1
         window_series_id = f"{base_series_id}_{window_id}" # series_1, series_2, ...
 
-        # Call draw_image() for this window
+        # Call draw_image() for this window to get the image tensor
         img_tensor = draw_image(
             series_id=window_series_id, # series_1
             save_path=save_path,
@@ -233,9 +233,7 @@ def draw_windowed_images(
         )
 
         if img_tensor is not None:
-            aggregated_imgs.append(img_tensor) # [num_windows, C, H, W]
-            # a list of image tensors, each with shape [C, H, W]
-
+            aggregated_imgs.append(img_tensor) # a list of image tensors, each with shape [C, H, W]
     if len(aggregated_imgs) == 0:
         warnings.warn("No windowed images were generated.")
         return False
@@ -243,8 +241,8 @@ def draw_windowed_images(
     aggregated_imgs = np.stack(aggregated_imgs)  # shape: [num_windows, C, H, W]
 
     # Build base filename (always use "line" suffix)
-    base_filename = os.path.join(save_path, f"{base_series_id}_line")
-    np.save(base_filename + "_img.npy", aggregated_imgs)
+    base_filename = os.path.join(save_path, f"{base_series_id}_line") # e.g. series_line
+    np.save(base_filename + "_img.npy", aggregated_imgs) # e.g. series_line_img.npy
     print(f"Saved aggregated image tensor to {base_filename}_img.npy")
 
     return True
