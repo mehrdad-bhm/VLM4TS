@@ -197,21 +197,23 @@ def draw_windowed_images(
 
     # Iterate over windows
     for start in range(0, num_points - window_size + 1, step_size): 
-        # (0, 1000 - 224 + 1 , 56) = (0, 777, 56) : start=0, 56, 112, ..., 776
+            # (0, 1000 - 224 + 1 , 56) = (0, 777, 56)
+            # start = 0, 56, 112, ..., 776
         end = start + window_size 
-        # 0 + 224 = 224, 56 + 224 = 280, ..., 776 + 224 = 1000 : end=224, 280, 168, ..., 1000
+            # 0 + 224 = 224, 56 + 224 = 280, ..., 776 + 224 = 1000 : 
+            # end = 224, 280, 168, ..., 1000
         
         # Extract the windowed sub-sequence and corresponding time points
         window_series = time_series[start:end] # a window of values:     
-        # first iterate -> values between index 0:224
-        # second iterate -> values between index 56:280
-        # ...
-        # last iterate -> values between index 776:1000
+            # 1st iterate -> values between index 0:224
+            # 2nd iterate -> values between index 56:280
+            # ...
+            # last iterate -> values between index 776:1000
         window_time = time_points[start:end]   # a window of timestamps: 
-        # first iterate -> timestamps between index 0:224,
-        # second iterate -> timestamps between index 56:280,
-        # ...,
-        # last iterate -> timestamps between index 776:1000
+            # 1st iterate -> timestamps between index 0:224
+            # 2nd iterate -> timestamps between index 56:280
+            # ...
+            # last iterate -> timestamps between index 776:1000
 
         # Create a unique series ID for this window
         window_id += 1
@@ -231,7 +233,8 @@ def draw_windowed_images(
         )
 
         if img_tensor is not None:
-            aggregated_imgs.append(img_tensor)
+            aggregated_imgs.append(img_tensor) # [num_windows, C, H, W]
+            # a list of image tensors, each with shape [C, H, W]
 
     if len(aggregated_imgs) == 0:
         warnings.warn("No windowed images were generated.")
