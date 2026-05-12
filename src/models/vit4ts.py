@@ -180,7 +180,8 @@ class ViT4TS:
             '''
             
             time_points = np.arange(len(values_proc)) # output: [0, 1, 2, ..., 999]
-            n_windows = int((T_full - self.window_size) / step_size) + 1 # 1000 - 224 = 776 / 56 = 13.85 + 1 = 14 windows total
+            n_windows = int((T_full - self.window_size) / step_size) + 1 
+                # 1000 - 224 = 776 / 56 = 13.85 + 1 = 14 windows total
 
             plot_params = ("-", 1, "*", 0.1, "black", (0, 1) if self.standardize else None) 
             # line style, line width, marker, marker size, color, y-axis limits (if standardized)
@@ -191,8 +192,8 @@ class ViT4TS:
                 )
 
             success = draw_windowed_images(
-                base_series_id=base_series_id,
-                save_path=results_dir,
+                base_series_id=base_series_id, # "series"
+                save_path=results_dir, # temp_dir
                 time_series=values_proc,
                 time_points=time_points,
                 window_size=self.window_size,
@@ -212,7 +213,8 @@ class ViT4TS:
             if self.verbose:
                 print("Running vision model inference...")
 
-            anomaly_scores = self._run_inference(results_dir, base_series_id)
+            # This will return a vector of length T_full with anomaly scores aligned to the original time series
+            anomaly_scores = self._run_inference(results_dir, base_series_id) 
 
             if anomaly_scores is None or len(anomaly_scores) == 0:
                 warnings.warn("No anomaly scores generated. Returning empty scores.")
@@ -284,8 +286,9 @@ class ViT4TS:
         """
         # Create dataset
         dataset = CLIPTimeSeriesDataset(
-            results_dir=results_dir,
-            base_series_id=base_series_id,
+            results_dir=results_dir, 
+                # location where saved tensors with shape of [num_windows, C, H, W] are stored in temp_dir
+            base_series_id=base_series_id, # "series"
             sample_size=None,
             no_anomaly=True,  # Zero-shot, no labels
             plot_type="line",  # Always use line plots
